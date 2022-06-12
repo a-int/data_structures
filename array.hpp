@@ -1,30 +1,27 @@
-template<typename T, int sz>
-class Array{
+template<typename T, const unsigned int sz>
+class array{
 private:
-    T *vals;
+    T vals[sz];
 public:
-    Array();
-    ~Array();
+    array() = default;
     T* begin() {return &vals[0];}
     T* end() {return &vals[sz-1];}
-    int size() const {return sz;}
+    constexpr int size() const {return sz;}
     T& operator[](std::size_t index){return vals[index];}
     const T& operator[](std::size_t index) const {return vals[index];}
     T& at(std::size_t);
+    const T& at(std::size_t) const;
 };
 
-template<typename T, int sz>
-Array<T,sz>::Array() {
-    this->vals = new T[sz];
+template<typename T, const unsigned int sz>
+T& array<T, sz>::at(std::size_t index){
+    if ((index>=sz))
+        throw"Worng index is used";
+    return vals[index];
 }
 
-template<typename T, int sz>
-Array<T,sz>::~Array() {
-    delete[] this->vals;
-}
-
-template<typename T, int sz>
-T& Array<T, sz>::at(std::size_t index){
+template<typename T, const unsigned int sz>
+const T& array<T, sz>::at(std::size_t index) const {
     if ((index>=sz))
         throw"Worng index is used";
     return vals[index];
