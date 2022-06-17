@@ -1,8 +1,10 @@
 template<typename T, const unsigned int sz>
 class array{
 public:
-    array() = delete;
-
+    array() = default;
+    array(const array& orig): vals(orig.vals) {};
+    array& operator=(const array& rhs) {vals = rhs.vals;}
+    
 public:
     T* begin() {return &vals[0];}
     T* end() {return &vals[sz-1];}
