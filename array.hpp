@@ -1,27 +1,33 @@
 template<typename T, const unsigned int sz>
 class array{
-private:
-    T vals[sz];
 public:
-    array() = default;
+    array() = delete;
+
+public:
     T* begin() {return &vals[0];}
     T* end() {return &vals[sz-1];}
+
     constexpr int size() const {return sz;}
-    T& operator[](std::size_t index){return vals[index];}
-    const T& operator[](std::size_t index) const {return vals[index];}
-    T& at(std::size_t);
-    const T& at(std::size_t) const;
+
+    T& operator[](unsigned int index){return vals[index];}
+    const T& operator[](unsigned int index) const {return vals[index];}
+
+    T& at(unsigned int);
+    const T& at(unsigned int) const;
+
+private:
+    T vals[sz];
 };
 
 template<typename T, const unsigned int sz>
-T& array<T, sz>::at(std::size_t index){
+T& array<T, sz>::at(unsigned int index){
     if ((index>=sz))
         throw"Worng index is used";
     return vals[index];
 }
 
 template<typename T, const unsigned int sz>
-const T& array<T, sz>::at(std::size_t index) const {
+const T& array<T, sz>::at(unsigned int index) const {
     if ((index>=sz))
         throw"Worng index is used";
     return vals[index];
