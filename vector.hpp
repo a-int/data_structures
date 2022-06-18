@@ -61,27 +61,30 @@ vector<T>::vector(T* begin, T* end): sz(end-begin), cap(sz), vals(new T[cap]){
 }
 
 template<typename T>
-void vector<T>::resize(unsigned int sz){
-   T* tmp = new T[sz];
-   for(unsigned int i = 0; i<sz; i++) 
+void vector<T>::resize(unsigned int newCapacity){
+   T* tmp = new T[newCapacity];
+
+   if(newCapacity < sz) sz = newCapacity;
+
+   for(unsigned int i = 0; i < sz; i++) 
    {
-        if(i > this->sz) tmp[i] = T();
         tmp[i] = vals[i];
    }
-   if(sz < this->sz) this->sz = sz;
-   cap = sz;
    delete[] vals;
    vals = tmp;
+
+   cap = newCapacity;
 }
 
 template<typename T>
 void vector<T>::checkForResize(){
+    // Check if need to extend/shrink
     if (sz == cap)
     {
         cap *= 2;
         this->resize(cap);
     }
-    else if ( sz && (sz-1 < cap/2) ) this->resize(cap/2);
+    else if ( sz && (sz == cap/2) ) this->resize(cap/2);
 }
 
 template<typename T>
@@ -98,7 +101,7 @@ T* vector<T>::insert(T* pos, const T& obj){
     //Push forward every value from pos
     for (T* current = this->end(); current > pos; current--)
     {
-        *current = *(current - 1);
+        *current = *(current-1);
     }
     *pos = obj;
     sz++;
@@ -109,8 +112,8 @@ template<typename T>
 void vector<T>::pop_back(){
     checkForResize();    
 
-    T* tmp = new T[sz];
-    for(unsigned int i = 0; i<sz--; i++) 
+    T* tmp = new T[--sz];
+    for(unsigned int i = 0; i < sz; i++) 
     {
         tmp[i] = vals[i];
     }
