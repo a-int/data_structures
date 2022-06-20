@@ -1,137 +1,106 @@
+#include <memory>
+
 template<typename T>
 class vector{
 public:
-    vector(): sz(1), cap(sz), vals(new T[cap]) {}
-    vector(const vector&);
-    explicit vector(unsigned int N): sz(N), cap(sz), vals(new T[cap]){};
-    vector(unsigned int N, const T& var);
-    vector(T*, T*);
-    ~vector() {delete[] vals;}
-    vector& operator=(const vector&);
+    vector(): __size(0), __capacity(0), __vals(nullptr) {}
+    vector(unsigned int N): __size(0), __capacity(N), __vals(__allocator.allocate(N)) {}
+    vector(unsigned int N, const T& val);
+    ~vector(){free(__vals, __capacity);}
 
 public:
-    T& operator[](unsigned int index) {return vals[index];}
-    const T& operator[](unsigned int index) const {return vals[index];}
-    
-    T* begin() {return vals;}
-    T* end() {return vals+sz;}
+    unsigned int size() const {return __size;}
+    unsigned int capacity() const {return __capacity;}
 
-    unsigned int size() const {return sz;}
-    unsigned int capacity() const {return cap;}
-    void resize(unsigned int);
+    T* begin() {return __vals;}
+    const T* begin() const {return __vals;}
+    
+    T* end() {return __vals + __size;}
+    const T* end() const {return __vals + __size;}
+
+    T& operator[](unsigned int i) {return __vals[i];}
+    const T& operator[](unsigned int i) const {return __vals[i];}
+
+    void resize(unsigned int newCapacity);
+    void fit_to_size();
 
     T* push_back(const T&);
-    T* insert(T*, const T&);
-
     void pop_back();
-    T* erase(T*);
-
 private:
-    void checkForResize();
-
+    void free(T* mem, unsigned int capacity);
+    void checkForShrink();
+    void checkForExtend();
 private:
-    unsigned int sz;
-    unsigned int cap = 1;
-    T* vals;
+    std::allocator<T> __allocator;
+    unsigned int __size;
+    unsigned int __capacity;
+    T* __vals;
 };
 
 template<typename T>
-vector<T>::vector(const vector& orig):sz(orig.size()), cap(orig.capacity()), vals(new T[cap]){
-    for(unsigned int i = 0; i<sz; i++) vals[i] = orig[i];
+vector<T>::vector(unsigned int N, const T& val): vector(N) {
+    for (unsigned int i = 0; i < __capacity; i++)
+    {
+        __allocator.construct(this->begin() + i, val);
+    }
 }
 
 template<typename T>
-vector<T>::vector(unsigned int N, const T& var):vector(N) {
-    for(unsigned int i = 0; i<N; i++) vals[i] = var;
-}
-
-template<typename T>
-vector<T>& vector<T>::operator=(const vector<T>& rhs){
-    sz = rhs.size();
-    cap = rhs.capacity();
-    T* tmp = new T[cap];
-    for(unsigned int i = 0; i<sz; i++) tmp[i] = rhs[i];
-    delete[] vals;
-    vals = tmp;
-    return *this;
-}
-template<typename T>
-vector<T>::vector(T* begin, T* end): sz(end-begin), cap(sz), vals(new T[cap]){
-    for(unsigned int i = 0; i<sz; i++) vals[i] = *(begin+i);
+void vector<T>::free(T* mem, unsigned int capacity){
+    for (unsigned int i = 0; i < capacity; i++)
+    {
+        __allocator.destroy(mem + i);
+    }
+    __allocator.deallocate(mem, capacity);
 }
 
 template<typename T>
 void vector<T>::resize(unsigned int newCapacity){
-   T* tmp = new T[newCapacity];
+    T* tmp = __allocator.allocate(newCapacity);
 
-   if(newCapacity < sz) sz = newCapacity;
+    if (newCapacity < __size) __size = newCapacity;
 
-   for(unsigned int i = 0; i < sz; i++) 
-   {
-        tmp[i] = vals[i];
-   }
-   delete[] vals;
-   vals = tmp;
-
-   cap = newCapacity;
-}
-
-template<typename T>
-void vector<T>::checkForResize(){
-    // Check if need to extend/shrink
-    if (sz == cap)
+    for (unsigned int i = 0; i < __size; i++)
     {
-        cap *= 2;
-        this->resize(cap);
+        __allocator.construct(tmp+i, __vals[i]);
     }
-    else if ( sz && (sz == cap/2) ) this->resize(cap/2);
+
+    free(__vals, __capacity);
+
+    __capacity = newCapacity;
+    __vals = tmp;
+}
+template<typename T>
+void vector<T>::fit_to_size(){
+    this->resize(__size);
 }
 
 template<typename T>
-T* vector<T>::push_back(const T& obj){
-    checkForResize();
-    vals[sz] = obj;
-    return vals + sz++;
-}
-
-template<typename T>
-T* vector<T>::insert(T* pos, const T& obj){
-    checkForResize();
-
-    //Push forward every value from pos
-    for (T* current = this->end(); current > pos; current--)
+void vector<T>::checkForExtend(){
+    if (__size == __capacity)
     {
-        *current = *(current-1);
+        __capacity *= 2;
+        this->resize(__capacity);
     }
-    *pos = obj;
-    sz++;
-    return pos;
 }
 
+template<typename T>
+void vector<T>::checkForShrink(){
+    if ( __size && (__size <= __capacity/2) ) this->resize(__capacity/2);
+}
+
+
+template<typename T>
+T* vector<T>::push_back(const T& value){
+    checkForExtend();
+    __allocator.construct(__vals + __size, value);
+    return __vals + __size++;
+}
 template<typename T>
 void vector<T>::pop_back(){
-    checkForResize();    
-
-    T* tmp = new T[--sz];
-    for(unsigned int i = 0; i < sz; i++) 
+    checkForShrink();
+    if (__size > 0)
     {
-        tmp[i] = vals[i];
+        __allocator.destroy(__vals + (--__size));
     }
-
-    delete[] vals;
-    vals = tmp;
-}
-
-template<typename T>
-T* vector<T>::erase(T* pos){
-    checkForResize();
-    sz--;
-    
-    //Push forward every value from pos
-    for (T* current = pos; current <= this->end(); current++)
-    {
-        *current = *(current + 1);
-    }
-
-    return pos;
 }
