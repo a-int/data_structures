@@ -3,9 +3,11 @@
 template<typename T>
 class vector{
 public:
-    vector(): __size(0), __capacity(1), __vals(nullptr) {}
-    vector(unsigned int N): __size(0), __capacity(N), __vals(__allocator.allocate(N)) {}
+    vector(): __size(0), __capacity(1), __vals(__allocator.allocate(__capacity)) {}
+    vector(unsigned int N): __size(0), __capacity(N), __vals(__allocator.allocate(__capacity)) {}
     vector(unsigned int N, const T& val);
+    vector(const vector& orig);
+    vector& operator=(const vector& rhs);
     ~vector(){free();}
 
 public:
@@ -42,10 +44,31 @@ private:
 
 template<typename T>
 vector<T>::vector(unsigned int N, const T& val): vector(N) {
-    for (unsigned int i = 0; i < __capacity; i++)
+    __size = N;
+    for (unsigned int i = 0; i < __size; i++)
     {
         __allocator.construct(this->begin() + i, val);
     }
+}
+
+template<typename T>
+vector<T>::vector(const vector& orig): __size(orig.__size), __capacity(orig.__capacity), __vals(__allocator.allocate(__capacity)){
+    for (unsigned int i = 0; i < __size; i++)
+    {
+        __allocator.construct(this->begin() + i, orig.__vals[i]);
+    }
+}
+
+template<typename T>
+vector<T>& vector<T>::operator=(const vector<T>& rhs){
+    __size = rhs.__size;
+    __capacity = rhs.__capacity;
+    __vals = __allocator.allocate(__capacity);
+    for (unsigned int i = 0; i < __size; i++)
+    {
+        __allocator.construct(this->begin() + i, rhs.__vals[i]);
+    }
+    return *this;
 }
 
 template<typename T>
@@ -73,6 +96,7 @@ void vector<T>::resize(unsigned int newCapacity){
     __capacity = newCapacity;
     __vals = tmp;
 }
+
 template<typename T>
 void vector<T>::fit_to_size(){
     this->resize(__size);
