@@ -13,6 +13,7 @@ public:
 public:
     unsigned int size() const {return __size;}
     unsigned int capacity() const {return __capacity;}
+    bool empty() const {return __size == 0;}
 
 
     T* begin() {return __vals;}
