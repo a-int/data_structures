@@ -45,10 +45,10 @@ public:
     ~list() {free();}
 
     T& front() {return m_Head->value();}
-    const T& front() const  {return m_Head->value();}
+    const T& front() const {return this->empty()? T():m_Head->value();}
 
     T& back() {return m_Back->value();}
-    const T& back() const {return m_Back->value();}
+    const T& back() const {return this->empty()? T():m_Back->value();}
 
     Node<T>* begin() {return m_Head;};
     const Node<T>* begin() const {return m_Head;};
