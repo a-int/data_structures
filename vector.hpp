@@ -14,11 +14,18 @@ public:
     unsigned int size() const {return __size;}
     unsigned int capacity() const {return __capacity;}
 
+
     T* begin() {return __vals;}
     const T* begin() const {return __vals;}
     
     T* end() {return __vals + __size;}
     const T* end() const {return __vals + __size;}
+
+    T& back() {return *(this->end()-1);}
+    const T& back() const {return *(this->end()-1);}
+
+    T& front() {return *(this->begin());}
+    const T& front() const {return *(this->begin());}
 
     T& operator[](unsigned int i) {return __vals[i];}
     const T& operator[](unsigned int i) const {return __vals[i];}
