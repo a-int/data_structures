@@ -92,25 +92,30 @@ void list<T>::free(){
 
 template<typename T>
 void list<T>::push_back(const T& new_Value){
-    Node<T>* next = m_Allocator.allocate(1);
-    m_Allocator.construct(next, new_Value);
+    //Allocate memory for new object and construct it with provided argument
+    Node<T>* new_node = m_Allocator.allocate(1);
+    m_Allocator.construct(new_node, new_Value);
 
-    if (m_Size > 1) m_Back->set_next(next);
-    else if(m_Size == 1) m_Head->set_next(next);
-    else m_Head = next;
-    
-    m_Back = next;
+    //There are no nodes e.g. head points to nullptr
+    if(!m_Size){
+        m_Head = new_node;
+        m_Back = m_Head;
+        return;
+    }
+    m_Back->set_next(new_node);
+    m_Back = new_node;
     m_Size++;
 }
 
 template<typename T>
 void list<T>::push_front(const T& new_Value){
-    Node<T>* next = m_Allocator.allocate(1);
-    m_Allocator.construct(next, new_Value);
+    //Allocate memory for new object and construct it with provided argument
+    Node<T>* new_node = m_Allocator.allocate(1);
+    m_Allocator.construct(new_node, new_Value);
 
-    if (m_Size > 0) next->set_next(m_Head);
-    else m_Back = next;
-    m_Head = next;
+    if (m_Size > 0) new_node->set_next(m_Head);
+    else m_Back = new_node;
+    m_Head = new_node;
     m_Size++;
 }
 
@@ -118,14 +123,16 @@ template<typename T>
 void list<T>::pop_back(){
     if(this->empty()) return;
 
-    Node<T>* current = m_Head;
+    Node<T>* penultimate = m_Head;
 
-    if(m_Size != 1) 
-        while(current->next() != m_Back) current = current->next();
-    current->set_next(nullptr);
+    if(m_Size != 1)
+        while(penultimate->next() != m_Back) penultimate = penultimate->next();
+
+    penultimate->set_next(nullptr);
+    //if size==1 m_Back points to the only node
     m_Allocator.destroy(m_Back);
     m_Allocator.deallocate(m_Back, 1);
-    m_Back = current;
+    m_Back = penultimate;
     // if (m_Size == 1) {
     //     m_Head = nullptr;
     //     m_Back = nullptr;
@@ -137,11 +144,11 @@ template<typename T>
 void list<T>::pop_front(){
     if(this->empty()) return;
 
-    Node<T>* current = m_Head;
+    Node<T>* first = m_Head;
     
     m_Head = m_Head->next();
-    m_Allocator.destroy(current);
-    m_Allocator.deallocate(current, 1);
+    m_Allocator.destroy(first);
+    m_Allocator.deallocate(first, 1);
     // if (m_Size == 1) {
     //     m_Head = nullptr;
     //     m_Back = nullptr;
