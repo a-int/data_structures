@@ -63,6 +63,7 @@ void forward_list<T>::push_back(const T& new_Value){
     if(!m_Size){
         m_Head = new_node;
         m_Back = m_Head;
+        m_Size++;
         return;
     }
     m_Back->set_next(new_node);
