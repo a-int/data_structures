@@ -5,7 +5,7 @@
 template<typename T>
 class list{
 public:
-    list(): m_Head(nullptr), m_Back(m_Head), m_Size(0){}
+    list(): m_Head(m_Allocator.allocate(1)), m_Back(m_Head), m_Size(0){}
     ~list() {free();}
 
     T& front() {return m_Head->value();}
@@ -30,6 +30,9 @@ public:
 
     virtual void pop_back();
     virtual void pop_front();
+
+    virtual Node<T>* insert(Node<T>* pos, const T& new_value);
+    virtual Node<T>* erase(Node<T>* pos);
 
 protected:
     void free();
@@ -106,4 +109,41 @@ void list<T>::pop_front(){
     m_Allocator.deallocate(m_Head->previous(), 1);
     m_Head->set_previous(nullptr);
     m_Size--;
+}
+
+template<typename T>
+Node<T>* list<T>::insert(Node<T>* pos, const T& new_value){
+    //create new node and update links in list
+    Node<T>* new_node = m_Allocator.allocate(1);
+    m_Allocator.construct(new_node, new_value);
+
+    if(!m_Size){
+        m_Head = new_node;
+        m_Back = m_Head;
+    }
+    else{
+        if(pos->previous() != nullptr) {pos->previous()->set_next(new_node);}
+        pos->set_previous(new_node);
+        new_node->set_next(pos);
+        if(pos == m_Head) {m_Head = new_node;}
+    }
+    m_Size++;
+    return pos;
+}
+
+template<typename T>
+Node<T>* list<T>::erase(Node<T>* pos){
+    if(m_Size){
+        if(pos->previous() != nullptr) pos->previous()->set_next(pos->next());
+        if(pos->next() != nullptr) pos->next()->set_previous(pos->previous());
+    
+        if (pos == m_Back)  m_Back = pos->previous();
+        else if(pos == m_Head) m_Head = pos->next();
+        m_Allocator.destroy(pos);
+        m_Allocator.deallocate(pos, 1);
+        
+
+        m_Size--;
+    }
+    return pos;
 }

@@ -14,6 +14,9 @@ public:
 
     void pop_back() override;
     void pop_front() override;
+
+    Node<T>* insert(Node<T>* pos, const T& new_value) override;
+    Node<T>* erase(Node<T>* pos) override;
 };
 
 template<typename T>
@@ -81,4 +84,40 @@ void forward_list<T>::pop_front(){
     //     m_Back = nullptr;
     // }
     this->m_Size--;
+}
+
+template<typename T>
+Node<T>* forward_list<T>::insert(Node<T>* pos, const T& new_value){
+    //create new node and update links in list
+    Node<T>* new_node = this->m_Allocator.allocate(1);
+    this->m_Allocator.construct(new_node, new_value);
+
+    if(!this->m_Size){
+        this->m_Head = new_node;
+        this->m_Back = this->m_Head;
+    }
+    else{
+        Node<T>* prev = this->m_Head;
+        while (prev->next() != pos && prev != pos) {prev = prev->next();}
+        new_node->set_next(prev);
+        if (pos == this->m_Head)  this->m_Head = new_node;
+    }
+    this->m_Size++;
+    return pos;
+}
+
+template<typename T>
+Node<T>* forward_list<T>::erase(Node<T>* pos){
+    if(this->m_Size){
+        Node<T>* prev = this->m_Head;
+        while (prev->next() != pos && prev != pos) {prev = prev->next();}
+        prev->set_next(pos->next());
+        if (pos == this->m_Head) this->m_Head = this->m_Head->next();
+        else if(pos == this->m_Back) this->m_Back = prev;
+
+        this->m_Allocator.destroy(pos);
+        this->m_Allocator.deallocate(pos, 1);
+        this->m_Size--;
+    }
+    return pos;
 }
