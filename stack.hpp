@@ -1,6 +1,6 @@
 #include "vector.hpp"
 #include "list.hpp"
-
+#pragma once
 template<typename T>
 class astack{
 public:

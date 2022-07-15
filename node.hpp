@@ -23,8 +23,8 @@ public:
     const T& value() const {return *m_Value;}
     
     
-    void set_next(Node<T>* node) {m_Next = node;}
-    void set_previous(Node<T>* node) {m_Previous = node;}
+    void set_next(Node<T>* Node) {m_Next = Node;}
+    void set_previous(Node<T>* Node) {m_Previous = Node;}
     void set_value(const T& new_Value);
 
 private:

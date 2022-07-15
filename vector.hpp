@@ -1,5 +1,5 @@
 #include <memory>
-
+#pragma once
 template<typename T>
 class vector{
 public:

@@ -1,3 +1,4 @@
+#pragma once
 template<typename T, const unsigned int sz>
 class array{
 public:
@@ -6,8 +7,8 @@ public:
     array& operator=(const array& rhs) {vals = rhs.vals;}
     
 public:
-    T* begin() {return &vals[0];}
-    T* end() {return &vals[sz-1];}
+    T* begin() {return vals[0];}
+    T* end() {return vals[sz-1];}
 
     constexpr int size() const {return sz;}
 
@@ -18,7 +19,7 @@ public:
     const T& at(unsigned int) const;
 
 private:
-    T vals[sz];
+    T *vals[sz];
 };
 
 template<typename T, const unsigned int sz>
