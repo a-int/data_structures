@@ -2,10 +2,10 @@
 #include "node.hpp"
 
 template<typename T>
-class list{
+class forward_list{
 public:
-    list(): m_Head(nullptr), m_Back(m_Head), m_Size(0){}
-    ~list() {free();}
+    forward_list(): m_Head(nullptr), m_Back(m_Head), m_Size(0){}
+    ~forward_list() {free();}
 
     T& front() {return m_Head->value();}
     const T& front() const {return this->empty()? T():m_Head->value();}
@@ -41,7 +41,7 @@ private:
 };
 
 template<typename T>
-void list<T>::free(){
+void forward_list<T>::free(){
     Node<T>* current = m_Head;
     for(unsigned int i = 0; i < m_Size; i++)
     {
@@ -54,7 +54,7 @@ void list<T>::free(){
 }
 
 template<typename T>
-void list<T>::push_back(const T& new_Value){
+void forward_list<T>::push_back(const T& new_Value){
     //Allocate memory for new object and construct it with provided argument
     Node<T>* new_node = m_Allocator.allocate(1);
     m_Allocator.construct(new_node, new_Value);
@@ -71,7 +71,7 @@ void list<T>::push_back(const T& new_Value){
 }
 
 template<typename T>
-void list<T>::push_front(const T& new_Value){
+void forward_list<T>::push_front(const T& new_Value){
     //Allocate memory for new object and construct it with provided argument
     Node<T>* new_node = m_Allocator.allocate(1);
     m_Allocator.construct(new_node, new_Value);
@@ -83,7 +83,7 @@ void list<T>::push_front(const T& new_Value){
 }
 
 template<typename T>
-void list<T>::pop_back(){
+void forward_list<T>::pop_back(){
     if(this->empty()) return;
 
     Node<T>* penultimate = m_Head;
@@ -104,7 +104,7 @@ void list<T>::pop_back(){
 }
 
 template<typename T>
-void list<T>::pop_front(){
+void forward_list<T>::pop_front(){
     if(this->empty()) return;
 
     Node<T>* first = m_Head;
