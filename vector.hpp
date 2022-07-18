@@ -1,6 +1,116 @@
 #include <memory>
 #pragma once
 
+template<typename vector>
+class const_vector_iterator{
+public:
+    using value_type        =   const typename vector::value_type;
+    using const_pointer     =   const value_type*;
+    using const_reference   =   const value_type&;
+
+public:
+    const_vector_iterator(const_pointer ptr): m_Pointer(ptr) {}
+
+    const_reference operator*(){return *m_Pointer;}
+    const_reference operator->() {return &(*this->operator*());}
+    const_vector_iterator& operator++(){
+        ++m_Pointer;
+        return *this;
+    }
+    const_vector_iterator& operator++(int){
+        auto tmp = *this;
+        m_Pointer++;
+        return tmp;
+    }
+    const_vector_iterator& operator--(){
+        --m_Pointer;
+        return *this;
+    }
+    const_vector_iterator& operator--(int){
+        auto tmp = *this;
+        m_Pointer--;
+        return tmp;
+    }
+    const_vector_iterator    operator+(unsigned int off){
+        return m_Pointer+off;
+    }
+    const_vector_iterator&    operator+=(unsigned int off){
+        m_Pointer += off;
+        return *this;
+    }
+    const_vector_iterator    operator-(unsigned int off){
+        return m_Pointer - off;
+    }
+    unsigned int    operator-(const const_vector_iterator& off){
+        return m_Pointer - off.m_Pointer;
+    }
+    const_vector_iterator&    operator-=(unsigned int off){
+        m_Pointer -= off;
+        return *this;
+    }
+    
+    bool operator==(const const_vector_iterator& it){return m_Pointer == it.m_Pointer;}
+    bool operator!=(const const_vector_iterator& it){return !(m_Pointer == it.m_Pointer);}
+private:
+    const_pointer m_Pointer;
+};
+
+template<typename vector>
+class vector_iterator{
+public:
+    using value_type    =   typename vector::value_type;
+    using pointer       =   value_type*;
+    using reference     =   value_type&;
+
+public:
+    vector_iterator(pointer ptr): m_Pointer(ptr) {}
+
+    reference operator*(){return *m_Pointer;}
+    reference operator->() {return &(*this->operator*());}
+    vector_iterator&    operator++(){
+        ++m_Pointer;
+        return *this;
+    }
+    vector_iterator&    operator++(int){
+        auto tmp = *this;
+        m_Pointer++;
+        return tmp;
+    }
+    vector_iterator&    operator--(){
+        --m_Pointer;
+        return *this;
+    }
+    vector_iterator&    operator--(int){
+        auto tmp = *this;
+        m_Pointer--;
+        return tmp;
+    }
+    
+    vector_iterator    operator+(unsigned int off){
+        return m_Pointer+off;
+    }
+    
+    vector_iterator&    operator+=(unsigned int off){
+        m_Pointer += off;
+        return *this;
+    }
+    vector_iterator    operator-(unsigned int off){
+        return m_Pointer - off;
+    }
+    unsigned int    operator-(const vector_iterator& off){
+        return m_Pointer - off.m_Pointer;
+    }
+    vector_iterator&    operator-=(unsigned int off){
+        m_Pointer -= off;
+        return *this;
+    }
+    
+    bool operator==(const vector_iterator& it){return m_Pointer == it.m_Pointer;}
+    bool operator!=(const vector_iterator& it){return !(m_Pointer == it.m_Pointer);}
+private:
+    pointer m_Pointer;
+};
+
 template<typename T>
 class vector{
 public:
