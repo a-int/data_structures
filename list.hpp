@@ -4,15 +4,20 @@
 
 template<typename T>
 class list{
+    typedef T                   value_type;
+    typedef value_type*         pointer_type;
+    typedef const value_type*   const_pointer_type;
+    typedef value_type&         reference_type;
+    typedef const value_type&   const_reference_type;
 public:
     list(): m_Head(m_Allocator.allocate(1)), m_Back(m_Head), m_Size(0){}
     ~list() {free();}
 
-    T& front() {return m_Head->value();}
-    const T& front() const {return this->empty()? T():m_Head->value();}
+    reference_type          front()         {return m_Head->value();}
+    const_reference_type    front() const   {return this->empty()? T():m_Head->value();}
 
-    T& back() {return m_Back->value();}
-    const T& back() const {return this->empty()? T():m_Back->value();}
+    reference_type back() {return m_Back->value();}
+    const_reference_type back() const {return this->empty()? T():m_Back->value();}
 
     Node<T>* begin() {return m_Head;};
     const Node<T>* begin() const {return m_Head;};
@@ -25,13 +30,13 @@ public:
 
     void clear() {free();}
 
-    virtual void push_back(const T& new_Value);
-    virtual void push_front(const T& new_Value);
+    virtual void push_back(const_reference_type new_Value);
+    virtual void push_front(const_reference_type new_Value);
 
     virtual void pop_back();
     virtual void pop_front();
 
-    virtual Node<T>* insert(Node<T>* pos, const T& new_value);
+    virtual Node<T>* insert(Node<T>* pos, const_reference_type new_value);
     virtual Node<T>* erase(Node<T>* pos);
 
 protected:
@@ -57,7 +62,7 @@ void list<T>::free(){
 }
 
 template<typename T>
-void list<T>::push_back(const T& new_Value){
+void list<T>::push_back(const_reference_type new_Value){
     //Allocate memory for new object and construct it with provided argument
     Node<T>* new_node = m_Allocator.allocate(1);
     m_Allocator.construct(new_node, new_Value);
@@ -76,7 +81,7 @@ void list<T>::push_back(const T& new_Value){
 }
 
 template<typename T>
-void list<T>::push_front(const T& new_Value){
+void list<T>::push_front(const_reference_type new_Value){
     //Allocate memory for new object and construct it with provided argument
     Node<T>* new_node = m_Allocator.allocate(1);
     m_Allocator.construct(new_node, new_Value);
@@ -112,7 +117,7 @@ void list<T>::pop_front(){
 }
 
 template<typename T>
-Node<T>* list<T>::insert(Node<T>* pos, const T& new_value){
+Node<T>* list<T>::insert(Node<T>* pos, const_reference_type new_value){
     //create new node and update links in list
     Node<T>* new_node = m_Allocator.allocate(1);
     m_Allocator.construct(new_node, new_value);
