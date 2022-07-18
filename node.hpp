@@ -7,7 +7,7 @@ public:
     Node(): m_Value(m_Allocator.allocate(m_Size)), m_Next(nullptr), m_Previous(nullptr) {m_Allocator.construct(m_Value);}
     Node(const T& val): m_Value(m_Allocator.allocate(m_Size)), m_Next(nullptr), m_Previous(nullptr) {m_Allocator.construct(m_Value, val);}
     Node(const T& val, const Node<T>& Next): m_Value(m_Allocator.allocate(m_Size)), m_Next(&Next), m_Previous(nullptr) {m_Allocator.construct(m_Value, val);}
-    Node(const T& val, const Node<T>& Next, const Node<T>& Prev): m_Value(m_Allocator.allocate(m_Size)), m_Next(&Next), m_Previous(Prev) {m_Allocator.construct(m_Value, val);}
+    Node(const T& val, const Node<T>& Next, const Node<T>& Prev): m_Value(m_Allocator.allocate(m_Size)), m_Next(&Next), m_Previous(&Prev) {m_Allocator.construct(m_Value, val);}
     ~Node(){free();}
 private:
     void free();
