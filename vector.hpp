@@ -4,9 +4,15 @@
 template<typename T>
 class vector{
 public:
+    typedef T           value_type;
+    typedef T*          pointer;
+    typedef const T*    const_pointer;
+    typedef T&          reference;
+    typedef const T&    const_reference;
+public:
     vector(): m_Size(0), m_Capacity(1), m_Buffer(m_Allocator.allocate(m_Capacity))                {}
     vector(unsigned int N): m_Size(0), m_Capacity(N), m_Buffer(m_Allocator.allocate(m_Capacity))  {}
-    vector(unsigned int N, const T& val);
+    vector(unsigned int N, const_reference val);
     vector(const vector& orig);
     vector& operator=(const vector& rhs);
     ~vector()   {free();}
@@ -16,39 +22,39 @@ public:
     unsigned int    capacity()  const   {return m_Capacity;}
     bool            empty()     const   {return m_Size == 0;}
     
-    T*              begin()             {return m_Buffer;}
-    const T*        begin()     const   {return m_Buffer;}
-    T*              end()               {return m_Buffer + m_Size;}
-    const T*        end()       const   {return m_Buffer + m_Size;}
-    T&              back()              {return *(this->end()-1);}
-    const T&        back()      const   {return *(this->end()-1);}
-    T&              front()             {return *(this->begin());}
-    const T&        front()     const   {return *(this->begin());}
+    pointer         begin()             {return m_Buffer;}
+    const_pointer   begin()     const   {return m_Buffer;}
+    pointer         end()               {return m_Buffer + m_Size;}
+    const_pointer   end()       const   {return m_Buffer + m_Size;}
+    reference       back()              {return *(this->end()-1);}
+    const_reference back()      const   {return *(this->end()-1);}
+    reference       front()             {return *(this->begin());}
+    const_reference front()     const   {return *(this->begin());}
     
-    T&              operator[](unsigned int i)          {return m_Buffer[i];}
-    const T&        operator[](unsigned int i)  const   {return m_Buffer[i];}
+    reference              operator[](unsigned int i)          {return m_Buffer[i];}
+    const_reference        operator[](unsigned int i)  const   {return m_Buffer[i];}
 
     void    resize(unsigned int newCapacity);
     void    fit_to_size();
-    T*      push_back(const T&);
+    pointer push_back(const_reference);
     void    pop_back();
-    T*      insert(T* pos, const T& obj);
-    T*      erase(T* pos);
+    pointer insert(pointer pos, const_reference obj);
+    pointer erase(pointer pos);
 
 private:
-    void free();
-    void checkForShrink();
-    void checkForExtend();
+    void    free();
+    void    checkForShrink();
+    void    checkForExtend();
 
 private:
     std::allocator<T>   m_Allocator;
     unsigned int        m_Size;
     unsigned int        m_Capacity;
-    T*                  m_Buffer;
+    pointer             m_Buffer;
 };
 
 template<typename T>
-vector<T>::vector(unsigned int N, const T& val): 
+vector<T>::vector(unsigned int N, const_reference val): 
     vector(N)
 {
     m_Size = N;
@@ -85,7 +91,7 @@ void vector<T>::free(){
 
 template<typename T>
 void vector<T>::resize(unsigned int newCapacity){
-    T* tmp = m_Allocator.allocate(newCapacity);
+    pointer tmp = m_Allocator.allocate(newCapacity);
 
     if (newCapacity < m_Size) m_Size = newCapacity;
 
@@ -109,7 +115,7 @@ void vector<T>::checkForShrink()    {if ( m_Size && (m_Size <= m_Capacity/2) ) t
 
 
 template<typename T>
-T* vector<T>::push_back(const T& value){
+typename vector<T>::pointer vector<T>::push_back(const_reference value){
     checkForExtend();
     m_Allocator.construct(m_Buffer + m_Size, value);
     return m_Buffer + m_Size++;
@@ -121,11 +127,11 @@ void vector<T>::pop_back(){
 }
 
 template<typename T>
-T* vector<T>::insert(T* pos, const T& obj){
+typename vector<T>::pointer vector<T>::insert(pointer pos, const_reference obj){
     unsigned int sz = pos - this->begin();
     checkForExtend();
 
-    T* tmp = m_Allocator.allocate(m_Capacity);
+    pointer tmp = m_Allocator.allocate(m_Capacity);
     for (unsigned int i = 0; i <= m_Size; i++)
     {
         if      (i < sz)    m_Allocator.construct(tmp+i, m_Buffer[i]);
@@ -140,11 +146,11 @@ T* vector<T>::insert(T* pos, const T& obj){
 }
 
 template<typename T>
-T* vector<T>::erase(T* pos){
+typename vector<T>::pointer vector<T>::erase(pointer pos){
     unsigned int sz = pos - this->begin();
 
     checkForShrink();
-    T* tmp = m_Allocator.allocate(m_Capacity);
+    pointer tmp = m_Allocator.allocate(m_Capacity);
 
     for (unsigned int i = 0; i < m_Size; i++)
     {
