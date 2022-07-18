@@ -114,11 +114,14 @@ private:
 template<typename T>
 class vector{
 public:
-    typedef T           value_type;
-    typedef T*          pointer;
-    typedef const T*    const_pointer;
-    typedef T&          reference;
-    typedef const T&    const_reference;
+    typedef T                   value_type;
+    typedef value_type*         pointer;
+    typedef const value_type*   const_pointer;
+    typedef value_type&         reference;
+    typedef const value_type&   const_reference;
+
+    using iterator = vector_iterator<vector<T>>;
+    using const_iterator = const_vector_iterator<vector<T>>;
 public:
     vector(): m_Size(0), m_Capacity(1), m_Buffer(m_Allocator.allocate(m_Capacity))                {}
     vector(unsigned int N): m_Size(0), m_Capacity(N), m_Buffer(m_Allocator.allocate(m_Capacity))  {}
@@ -132,10 +135,10 @@ public:
     unsigned int    capacity()  const   {return m_Capacity;}
     bool            empty()     const   {return m_Size == 0;}
     
-    pointer         begin()             {return m_Buffer;}
-    const_pointer   begin()     const   {return m_Buffer;}
-    pointer         end()               {return m_Buffer + m_Size;}
-    const_pointer   end()       const   {return m_Buffer + m_Size;}
+    iterator        begin()             {return m_Buffer;}
+    const_iterator  begin()     const   {return m_Buffer;}
+    iterator        end()               {return m_Buffer + m_Size;}
+    const_iterator  end()       const   {return m_Buffer + m_Size;}
     reference       back()              {return *(this->end()-1);}
     const_reference back()      const   {return *(this->end()-1);}
     reference       front()             {return *(this->begin());}
@@ -148,8 +151,8 @@ public:
     void    fit_to_size();
     pointer push_back(const_reference);
     void    pop_back();
-    pointer insert(pointer pos, const_reference obj);
-    pointer erase(pointer pos);
+    iterator insert(iterator pos, const_reference obj);
+    iterator erase(iterator pos);
 
 private:
     void    free();
@@ -169,7 +172,7 @@ vector<T>::vector(unsigned int N, const_reference val):
 {
     m_Size = N;
     for (unsigned int i = 0; i < m_Size; i++)
-        m_Allocator.construct(this->begin() + i, val);
+        m_Allocator.construct(m_Buffer + i, val);
 }
 
 template<typename T>
@@ -177,7 +180,7 @@ vector<T>::vector(const vector& orig):
      m_Size(orig.m_Size), m_Capacity(orig.m_Capacity), m_Buffer(m_Allocator.allocate(m_Capacity))
 {
     for (unsigned int i = 0; i < m_Size; i++)
-        m_Allocator.construct(this->begin() + i, orig.m_Buffer[i]);
+        m_Allocator.construct(m_Buffer+i, orig.m_Buffer[i]);
 }
 
 template<typename T>
@@ -187,13 +190,14 @@ vector<T>& vector<T>::operator=(const vector<T>& rhs){
     m_Buffer    = m_Allocator.allocate(m_Capacity);
     
     for (unsigned int i = 0; i < m_Size; i++)
-        m_Allocator.construct(this->begin() + i, rhs.m_Buffer[i]);
+        m_Allocator.construct(m_Buffer+i, rhs.m_Buffer[i]);
 
     return *this;
 }
 
 template<typename T>
 void vector<T>::free(){
+    //destroy every constructed object and deallocate memory
     for (unsigned int i = 0; i < m_Size; i++)
         m_Allocator.destroy(m_Buffer + i);
     m_Allocator.deallocate(m_Buffer, m_Capacity);
@@ -230,6 +234,7 @@ typename vector<T>::pointer vector<T>::push_back(const_reference value){
     m_Allocator.construct(m_Buffer + m_Size, value);
     return m_Buffer + m_Size++;
 }
+
 template<typename T>
 void vector<T>::pop_back(){
     checkForShrink();
@@ -237,7 +242,7 @@ void vector<T>::pop_back(){
 }
 
 template<typename T>
-typename vector<T>::pointer vector<T>::insert(pointer pos, const_reference obj){
+typename vector<T>::iterator vector<T>::insert(iterator pos, const_reference obj){
     unsigned int sz = pos - this->begin();
     checkForExtend();
 
@@ -256,12 +261,11 @@ typename vector<T>::pointer vector<T>::insert(pointer pos, const_reference obj){
 }
 
 template<typename T>
-typename vector<T>::pointer vector<T>::erase(pointer pos){
+typename vector<T>::iterator vector<T>::erase(iterator pos){
     unsigned int sz = pos - this->begin();
-
     checkForShrink();
+    if(!m_Size) return this->end();
     pointer tmp = m_Allocator.allocate(m_Capacity);
-
     for (unsigned int i = 0; i < m_Size; i++)
     {
         if  (i < sz)    m_Allocator.construct(tmp+i, m_Buffer[i]);
