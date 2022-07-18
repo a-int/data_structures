@@ -3,62 +3,134 @@
 #pragma once
 
 template<typename T>
+class list;
+
+template<class list>
+class list_iterator{
+    friend list;
+public:
+    using value_type        =   typename list::value_type;
+    using pointer_type      =   value_type*;
+    using reference_type    =   value_type&;
+public:
+    list_iterator(Node<value_type>* ptr): m_Pointer(ptr){};
+
+    reference_type  operator*()     {return (m_Pointer->value());}
+    reference_type  operator->()    {return &(*this->operator*());}
+    list_iterator&  operator++()    {
+        m_Pointer = m_Pointer->next();
+        return *this;
+    }
+    list_iterator&  operator++(int) {
+        auto tmp = *this;
+        m_Pointer = m_Pointer->next();
+        return tmp;
+    }
+    list_iterator&  operator--()    {
+        m_Pointer = m_Pointer->previous();
+        return *this;
+    }
+    list_iterator&  operator--(int) {
+        auto tmp = *this;
+        m_Pointer = m_Pointer->previous();
+        return tmp;
+    }
+    
+    list_iterator   operator+(unsigned int off)         {
+        auto tmp = this;
+        for (unsigned int i = 0; i < off; i++)
+            tmp->m_Pointer = tmp->m_Pointer->next();
+        return m_Pointer;
+    }
+    list_iterator&  operator+=(unsigned int off)        {
+        for (unsigned int i = 0; i < off; i++)
+            m_Pointer = m_Pointer->next();
+        return *this;
+    }
+    list_iterator   operator-(unsigned int off)         {
+        auto tmp = this;
+        for (unsigned int i = 0; i < off; i++)
+            tmp->m_Pointer = tmp->m_Pointer->previous();
+        return m_Pointer;
+    }
+    unsigned int    operator-(const list_iterator& off) {
+        return m_Pointer - off.m_Pointer;
+    }
+    list_iterator&  operator-=(unsigned int off)        {
+        for (unsigned int i = 0; i < off; i++)
+            m_Pointer = m_Pointer->previous();
+        return *this;
+    }
+    
+    bool operator==(const list_iterator& it){return m_Pointer == it.m_Pointer;}
+    bool operator!=(const list_iterator& it){return !(m_Pointer == it.m_Pointer);}
+protected:
+    Node<value_type>* get_ptr() {return m_Pointer;}
+private:
+    Node<value_type>* m_Pointer;
+};
+
+template<typename T>
 class list{
+
+public:
     typedef T                   value_type;
     typedef value_type*         pointer_type;
     typedef const value_type*   const_pointer_type;
     typedef value_type&         reference_type;
     typedef const value_type&   const_reference_type;
+    using iterator =            list_iterator<list<T>>;
+
 public:
     list(): m_Head(m_Allocator.allocate(1)), m_Back(m_Head), m_Size(0){}
     ~list() {free();}
 
-    reference_type          front()         {return m_Head->value();}
-    const_reference_type    front() const   {return this->empty()? T():m_Head->value();}
+    reference_type          front()         {return m_Head;}
+    const_reference_type    front() const   {return m_Head;}
 
-    reference_type back() {return m_Back->value();}
-    const_reference_type back() const {return this->empty()? T():m_Back->value();}
+    reference_type          back()          {return m_Back;}
+    const_reference_type    back()  const   {return this->empty()? T():m_Back->value();}
 
-    Node<T>* begin() {return m_Head;};
-    const Node<T>* begin() const {return m_Head;};
+    iterator                begin()         {return m_Head;};
+    const iterator          begin() const   {return m_Head;};
 
-    Node<T>* end() {return m_Back;}
-    const Node<T>* end() const {return m_Back;}
+    iterator                end()           {return m_Back;}
+    const iterator          end()   const   {return m_Back;}
     
-    unsigned int size() const {return m_Size;}
-    bool empty() const {return m_Size == 0;}
+    unsigned int            size()  const   {return m_Size;}
+    bool                    empty() const   {return m_Size == 0;}
 
-    void clear() {free();}
+    void                    clear()         {free();}
 
-    virtual void push_back(const_reference_type new_Value);
-    virtual void push_front(const_reference_type new_Value);
+    virtual void            push_back(const_reference_type new_Value);
+    virtual void            push_front(const_reference_type new_Value);
 
-    virtual void pop_back();
-    virtual void pop_front();
+    virtual void            pop_back();
+    virtual void            pop_front();
 
-    virtual Node<T>* insert(Node<T>* pos, const_reference_type new_value);
-    virtual Node<T>* erase(Node<T>* pos);
+    virtual iterator        insert(iterator pos, const_reference_type new_value);
+    virtual iterator        erase(iterator pos);
 
 protected:
     void free();
 
     std::allocator<Node<T>> m_Allocator;
-    Node<T>* m_Head;
-    Node<T>* m_Back;
-    unsigned int m_Size;
+    Node<T>*                m_Head;
+    Node<T>*                m_Back;
+    unsigned int            m_Size;
 };
 
 template<typename T>
 void list<T>::free(){
-    Node<T>* current = m_Head;
-    for(unsigned int i = 0; i < m_Size; i++)
+    Node<T>* current;
+    for(auto i = 0; i < m_Size; i++)
     {
+        current = m_Head;
         m_Head = m_Head->next();
         m_Allocator.destroy(current);
         m_Allocator.deallocate(current, 1);
-        current = m_Head;  
+        m_Size--;
     }
-    m_Size = 0;
 }
 
 template<typename T>
@@ -117,7 +189,7 @@ void list<T>::pop_front(){
 }
 
 template<typename T>
-Node<T>* list<T>::insert(Node<T>* pos, const_reference_type new_value){
+typename list<T>::iterator list<T>::insert(iterator ittr, const_reference_type new_value){
     //create new node and update links in list
     Node<T>* new_node = m_Allocator.allocate(1);
     m_Allocator.construct(new_node, new_value);
@@ -127,18 +199,20 @@ Node<T>* list<T>::insert(Node<T>* pos, const_reference_type new_value){
         m_Back = m_Head;
     }
     else{
+        auto pos = ittr.get_ptr();
         if(pos->previous() != nullptr) {pos->previous()->set_next(new_node);}
         pos->set_previous(new_node);
         new_node->set_next(pos);
         if(pos == m_Head) {m_Head = new_node;}
     }
     m_Size++;
-    return pos;
+    return ittr;
 }
 
 template<typename T>
-Node<T>* list<T>::erase(Node<T>* pos){
+typename list<T>::iterator list<T>::erase(iterator ittr){
     if(m_Size){
+        auto pos = ittr.get_ptr();
         if(pos->previous() != nullptr) pos->previous()->set_next(pos->next());
         if(pos->next() != nullptr) pos->next()->set_previous(pos->previous());
     
@@ -150,5 +224,5 @@ Node<T>* list<T>::erase(Node<T>* pos){
 
         m_Size--;
     }
-    return pos;
+    return ittr;
 }
