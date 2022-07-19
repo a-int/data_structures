@@ -2,9 +2,6 @@
 #include "node.hpp"
 #pragma once
 
-template<typename T>
-class list;
-
 template<class list>
 class list_iterator{
     friend list;
@@ -21,7 +18,7 @@ public:
         m_Pointer = m_Pointer->next();
         return *this;
     }
-    list_iterator&  operator++(int) {
+    list_iterator   operator++(int) {
         auto tmp = *this;
         m_Pointer = m_Pointer->next();
         return tmp;
@@ -30,7 +27,7 @@ public:
         m_Pointer = m_Pointer->previous();
         return *this;
     }
-    list_iterator&  operator--(int) {
+    list_iterator   operator--(int) {
         auto tmp = *this;
         m_Pointer = m_Pointer->previous();
         return tmp;
@@ -62,11 +59,10 @@ public:
         return *this;
     }
     
-    bool operator==(const list_iterator& it){return m_Pointer == it.m_Pointer;}
-    bool operator!=(const list_iterator& it){return !(m_Pointer == it.m_Pointer);}
-protected:
-    Node<value_type>* get_ptr() {return m_Pointer;}
+    bool operator==(list_iterator it){return m_Pointer == it.m_Pointer;}
+    bool operator!=(list_iterator it){return !(m_Pointer == it.m_Pointer);}
 private:
+    Node<value_type>* as_node() {return m_Pointer;}
     Node<value_type>* m_Pointer;
 };
 
@@ -82,18 +78,16 @@ public:
     using iterator =            list_iterator<list<T>>;
 
 public:
-    list(): m_Head(m_Allocator.allocate(1)), m_Back(m_Head), m_Size(0){}
+    list(): m_Head(m_Allocator.allocate(1)), m_Back(m_Head), m_Size(0){m_Allocator.construct(m_Head, nullptr, nullptr);}
     ~list() {free();}
 
-    reference_type          front()         {return m_Head;}
-    const_reference_type    front() const   {return m_Head;}
-
-    reference_type          back()          {return m_Back;}
-    const_reference_type    back()  const   {return this->empty()? T():m_Back->value();}
+    reference_type          front()         {return *this->begin();}
+    const_reference_type    front() const   {return *this->begin();}
+    reference_type          back()          {return *--this->end();}
+    const_reference_type    back()  const   {return this->empty()? T(): *--this->end();}
 
     iterator                begin()         {return m_Head;};
     const iterator          begin() const   {return m_Head;};
-
     iterator                end()           {return m_Back;}
     const iterator          end()   const   {return m_Back;}
     
@@ -104,7 +98,6 @@ public:
 
     virtual void            push_back(const_reference_type new_Value);
     virtual void            push_front(const_reference_type new_Value);
-
     virtual void            pop_back();
     virtual void            pop_front();
 
@@ -112,8 +105,9 @@ public:
     virtual iterator        erase(iterator pos);
 
 protected:
-    void free();
-
+    void        free();
+    Node<T>*    ittr_deref(iterator& ittr) {return ittr.as_node();}
+    
     std::allocator<Node<T>> m_Allocator;
     Node<T>*                m_Head;
     Node<T>*                m_Back;
@@ -126,54 +120,52 @@ void list<T>::free(){
     for(auto i = 0; i < m_Size; i++)
     {
         current = m_Head;
-        m_Head = m_Head->next();
+        m_Head  = m_Head->next();
         m_Allocator.destroy(current);
         m_Allocator.deallocate(current, 1);
-        m_Size--;
     }
+    // for (auto current = this->begin(); current != this->end(); current++){
+    //     m_Allocator.destroy(ittr_deref(current));
+    //     m_Allocator.deallocate(ittr_deref(current), 1);
+    // }
+    // m_Head = m_Back;
+    m_Size = 0;
 }
 
 template<typename T>
 void list<T>::push_back(const_reference_type new_Value){
-    //Allocate memory for new object and construct it with provided argument
+    //Create a new node with m_Value = new_value and m_Next = m_Back
     Node<T>* new_node = m_Allocator.allocate(1);
-    m_Allocator.construct(new_node, new_Value);
+    m_Allocator.construct(new_node, new_Value, m_Back, m_Back->previous());
 
-    //There are no nodes e.g. head points to nullptr
-    if(!m_Size){
-        m_Head = new_node;
-        m_Back = m_Head;
-        m_Size++;
-        return;
-    }
-    m_Back->set_next(new_node);
-    new_node->set_previous(m_Back);
-    m_Back = new_node;
+    
+    if(!m_Size) m_Head = new_node;
+    else new_node->previous()->set_next(new_node);
+    m_Back->set_previous(new_node);
     m_Size++;
 }
 
 template<typename T>
 void list<T>::push_front(const_reference_type new_Value){
-    //Allocate memory for new object and construct it with provided argument
+    //Create a new node with m_Value = new_value and m_Next = m_Head and m_Previous = nullptr
     Node<T>* new_node = m_Allocator.allocate(1);
-    m_Allocator.construct(new_node, new_Value);
+    m_Allocator.construct(new_node, new_Value, m_Head, nullptr);
 
-    if (m_Size > 0) new_node->set_next(m_Head);
-    else m_Back = new_node;
-    m_Head->set_previous(new_node);
     m_Head = new_node;
+    if(!m_Size){m_Head->set_next(m_Back);}
     m_Size++;
 }
 
 template<typename T>
 void list<T>::pop_back(){
     if(this->empty()) return;
-
-    m_Back = m_Back->previous();
-    m_Allocator.destroy(m_Back->next());
-    m_Allocator.deallocate(m_Back->next(),1);
-    m_Back->set_next(nullptr);
-
+    auto new_previous = m_Back->previous()->previous();
+    m_Allocator.destroy(m_Back->previous());
+    m_Allocator.deallocate(m_Back->previous(),1);
+    m_Back->set_previous(new_previous);
+    if(m_Size>1) m_Back->previous()->set_next(m_Back);
+    else m_Head = m_Back;
+    
     m_Size--;
 }
 
@@ -191,37 +183,33 @@ void list<T>::pop_front(){
 template<typename T>
 typename list<T>::iterator list<T>::insert(iterator ittr, const_reference_type new_value){
     //create new node and update links in list
-    Node<T>* new_node = m_Allocator.allocate(1);
-    m_Allocator.construct(new_node, new_value);
+    auto        pos         = ittr_deref(ittr);
+    Node<T>*    new_node    = m_Allocator.allocate(1);
+    
+    m_Allocator.construct(new_node, new_value, pos, pos->previous());
 
-    if(!m_Size){
-        m_Head = new_node;
-        m_Back = m_Head;
-    }
+    if(!m_Size) m_Head = new_node;
     else{
-        auto pos = ittr.get_ptr();
-        if(pos->previous() != nullptr) {pos->previous()->set_next(new_node);}
-        pos->set_previous(new_node);
-        new_node->set_next(pos);
-        if(pos == m_Head) {m_Head = new_node;}
+        if(new_node->previous() != nullptr) new_node->previous()->set_next(new_node);
+        if(pos == this->begin().as_node()) m_Head = new_node;
     }
+
+    // else if(pos != this->begin().as_node())   new_node->previous()->set_next(new_node);
+    pos->set_previous(new_node);
     m_Size++;
     return ittr;
 }
 
 template<typename T>
 typename list<T>::iterator list<T>::erase(iterator ittr){
-    if(m_Size){
-        auto pos = ittr.get_ptr();
+    if(m_Size && (ittr != this->end())){
+        auto pos = ittr.as_node();
         if(pos->previous() != nullptr) pos->previous()->set_next(pos->next());
         if(pos->next() != nullptr) pos->next()->set_previous(pos->previous());
     
-        if (pos == m_Back)  m_Back = pos->previous();
-        else if(pos == m_Head) m_Head = pos->next();
+        if(pos == m_Head) m_Head = pos->next();
         m_Allocator.destroy(pos);
         m_Allocator.deallocate(pos, 1);
-        
-
         m_Size--;
     }
     return ittr;
