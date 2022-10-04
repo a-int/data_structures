@@ -1,11 +1,15 @@
 #include <memory>
-#include "node.hpp"
 #include "list.hpp"
 #pragma once
+
 
 template<typename T>
 class forward_list: public list<T>{
 public:
+    using value_type = typename list<T>::value_type;
+    using pointer_type = typename list<T>::pointer_type;
+    using iterator = typename list<T>::iterator;
+
     forward_list(): list<T>(){}
     ~forward_list() {this->free();}
 
@@ -14,24 +18,19 @@ public:
 
     void pop_back() override;
     void pop_front() override;
-
-    Node<T>* insert(Node<T>* pos, const T& new_value) override;
-    Node<T>* erase(Node<T>* pos) override;
+    
+    iterator insert(iterator iitr, const T& new_value) override;
+    iterator erase(iterator ittr) override;
 };
 
 template<typename T>
 void forward_list<T>::push_back(const T& new_Value){
     //Allocate memory for new object and construct it with provided argument
     Node<T>* new_node = this->m_Allocator.allocate(1);
-    this->m_Allocator.construct(new_node, new_Value);
+    this->m_Allocator.construct(new_node, new_Value, this->m_Back);
 
     //There are no nodes e.g. head points to nullptr
-    if(!this->m_Size){
-        this->m_Head = new_node;
-        this->m_Back = this->m_Head;
-        this->m_Size++;
-        return;
-    }
+    if(!this->m_Size) this->m_Head = new_node;
     this->m_Back->set_next(new_node);
     this->m_Back = new_node;
     this->m_Size++;
@@ -87,7 +86,7 @@ void forward_list<T>::pop_front(){
 }
 
 template<typename T>
-Node<T>* forward_list<T>::insert(Node<T>* pos, const T& new_value){
+typename forward_list<T>::iterator forward_list<T>::insert(iterator ittr, const T& new_value){
     //create new node and update links in list
     Node<T>* new_node = this->m_Allocator.allocate(1);
     this->m_Allocator.construct(new_node, new_value);
@@ -98,18 +97,21 @@ Node<T>* forward_list<T>::insert(Node<T>* pos, const T& new_value){
     }
     else{
         Node<T>* prev = this->m_Head;
+        Node<T>* pos = this->ittr_deref(ittr);
         while (prev->next() != pos && prev != pos) {prev = prev->next();}
         new_node->set_next(prev);
         if (pos == this->m_Head)  this->m_Head = new_node;
     }
     this->m_Size++;
-    return pos;
+    return ittr;
 }
 
 template<typename T>
-Node<T>* forward_list<T>::erase(Node<T>* pos){
+typename forward_list<T>::iterator forward_list<T>::erase(iterator ittr){
     if(this->m_Size){
         Node<T>* prev = this->m_Head;
+        
+        Node<T>* pos = this->ittr_deref(ittr);
         while (prev->next() != pos && prev != pos) {prev = prev->next();}
         prev->set_next(pos->next());
         if (pos == this->m_Head) this->m_Head = this->m_Head->next();
@@ -119,5 +121,5 @@ Node<T>* forward_list<T>::erase(Node<T>* pos){
         this->m_Allocator.deallocate(pos, 1);
         this->m_Size--;
     }
-    return pos;
+    return ittr;
 }
