@@ -123,7 +123,7 @@ public:
     using iterator = vector_iterator<vector<T>>;
     using const_iterator = const_vector_iterator<vector<T>>;
 public:
-    vector(): m_Size(0), m_Capacity(0), m_Buffer(m_Allocator.allocate(m_Capacity))                {}
+    vector(): m_Size(0), m_Capacity(0), m_Buffer(nullptr)                {}
     vector(unsigned int N): m_Size(0), m_Capacity(N), m_Buffer(m_Allocator.allocate(m_Capacity))  {}
     vector(unsigned int N, const_reference val);
     vector(const vector& orig);
