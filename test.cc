@@ -131,3 +131,70 @@ TEST(VectorTest, ResizeToSame){
     EXPECT_EQ(vec.size(), SIZE)<<"size must be equal to origin size -"<<SIZE;
     EXPECT_EQ(vec.capacity(), NEWSIZE)<<"capacity must be equal to "<<NEWSIZE;
 }
+
+TEST(VectorTest, PushBackEmptyVector){
+    vector<int> vec;
+    int NEWVAL = 100;
+
+    int* back = vec.push_back(NEWVAL);
+
+    EXPECT_EQ(vec.size(), 1)<<"Size must equal to 1";
+    EXPECT_EQ(back, &vec.back())<<"vector must return ptr to the newly added value";
+    EXPECT_EQ(vec.back(), NEWVAL)<<"newly added value not equal to provided - "<<NEWVAL;
+}
+TEST(VectorTest, PushBackNonEmptyVector){
+    int SIZE = 3;
+    int VAL = 5;
+    int NEWVAL = 100;
+    vector<int> vec(SIZE, VAL);
+    vector<int> origin_vec = vec;
+    
+    int* back = vec.push_back(NEWVAL);
+
+    EXPECT_EQ(vec.size(), (SIZE+1))<<"Size must be bigger than origin by one";
+    EXPECT_EQ(back, &vec.back())<<"vector must return ptr to the newly added value";
+    EXPECT_EQ(vec.back(), NEWVAL)<<"newly added value not equal to provided - "<<NEWVAL;
+
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, vec[0], origin_vec[0])<<"Old value changed";
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, vec[1], origin_vec[1])<<"Old value changed";
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, vec[2], origin_vec[2])<<"Old value changed";
+}
+TEST(VectorTest, PopBackEmptyVector){
+    vector<int> vec;
+
+    vec.pop_back();
+
+    EXPECT_EQ(vec.size(), 0);
+    EXPECT_EQ(vec.capacity(), 0);
+}
+TEST(VectorTest, PopBackNonEmptyVector){
+    int SIZE = 3;
+    int VAL = 5;
+    vector<int> vec(SIZE, VAL);
+
+    vec.pop_back();
+
+    EXPECT_EQ(vec.size(), (SIZE-1));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
