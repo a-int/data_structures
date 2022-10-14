@@ -20,8 +20,6 @@ TEST(VectorTest, DefaultProperties){
     EXPECT_EQ(vec.capacity(),0)<<"default capacity must be eqaul to zero";
     EXPECT_EQ(vec.m_Buffer, nullptr);
 }
-
-
 TEST(VectorTest, ConstructorWithProvidedCapacity){
     int SIZE = 3;
     vector<int> vec(SIZE);
@@ -32,6 +30,7 @@ TEST(VectorTest, ConstructorWithProvidedCapacity){
     EXPECT_NE(vec.m_Buffer+1, nullptr);
     EXPECT_NE(vec.m_Buffer+2, nullptr);
 }
+#endif //test for private members
 
 TEST(VectorTest, ConstructorWithProvidedCapacityAndValue){
     int SIZE = 3;
@@ -41,11 +40,10 @@ TEST(VectorTest, ConstructorWithProvidedCapacityAndValue){
     EXPECT_EQ(vec.size(), SIZE)<<"default size must be equal to zero";
     ASSERT_EQ(vec.capacity(), SIZE)<<"capacity must be equal to provided number - "<<SIZE;
     
-    EXPECT_PRED1([=](int x)->bool{return x == VALUE;}, *(vec.m_Buffer+0));
-    EXPECT_PRED1([=](int x)->bool{return x == VALUE;}, *(vec.m_Buffer+1));
-    EXPECT_PRED1([=](int x)->bool{return x == VALUE;}, *(vec.m_Buffer+2));
+    EXPECT_PRED1([=](int x)->bool{return x == VALUE;}, vec[0]);
+    EXPECT_PRED1([=](int x)->bool{return x == VALUE;}, vec[1]);
+    EXPECT_PRED1([=](int x)->bool{return x == VALUE;}, vec[2]);
 }
-
 TEST(VectorTest, ConstructByVector){
     vector<int> v1(3,1);
     vector<int>v2(v1);
@@ -53,11 +51,10 @@ TEST(VectorTest, ConstructByVector){
     EXPECT_EQ(v2.size(), v1.size());
     ASSERT_EQ(v2.capacity(), v1.capacity());
     
-    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, *(v2.m_Buffer+0), *(v1.m_Buffer+0));
-    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, *(v2.m_Buffer+1), *(v1.m_Buffer+1));
-    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, *(v2.m_Buffer+2), *(v1.m_Buffer+2));
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, v2[0], v1[0]);
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, v2[1], v1[1]);
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, v2[2], v1[2]);
 }
-
 TEST(VectorTest, AssignVector){
     vector<int> v1(3,1);
     vector<int>v2;
@@ -66,8 +63,7 @@ TEST(VectorTest, AssignVector){
     EXPECT_EQ(v2.size(), v1.size());
     ASSERT_EQ(v2.capacity(), v1.capacity());
 
-    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, *(v2.m_Buffer+0), *(v1.m_Buffer+0));
-    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, *(v2.m_Buffer+1), *(v1.m_Buffer+1));
-    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, *(v2.m_Buffer+2), *(v1.m_Buffer+2));
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, v2[0], v1[0]);
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, v2[1], v1[1]);
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, v2[2], v1[2]);
 }
-#endif //test for private members
