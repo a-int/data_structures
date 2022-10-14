@@ -1,3 +1,4 @@
+#include <cassert>
 #ifdef PTESTING
 #define private public
 #endif
@@ -66,4 +67,67 @@ TEST(VectorTest, AssignVector){
     EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, v2[0], v1[0]);
     EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, v2[1], v1[1]);
     EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, v2[2], v1[2]);
+}
+
+TEST(VectorTest, BeginMethod){
+    vector<int> vec(1,2);
+    ASSERT_EQ(*vec.begin(), vec[0]);
+}
+TEST(VectorTest, EndMethod){
+    vector<int> vec(1,2);
+
+    ASSERT_EQ(*vec.end(), vec[vec.size()]);
+}
+TEST(VectorTest, FrontMethod){
+    vector<int> vec(10,5);
+
+    EXPECT_EQ(vec.front(), *vec.begin());
+    EXPECT_EQ(&vec.front(), &(*(vec.begin())));
+}
+TEST(VectorTest, BackMethod){
+    vector<int> vec(10,5);
+
+    EXPECT_EQ(vec.back(), *(vec.end()-1));
+    EXPECT_EQ(&vec.back(), &(*(vec.end()-1)));
+}
+TEST(VectorTest, SubscriptOperator){
+    vector<int> vec(10, 5);
+
+    EXPECT_EQ(vec[0], vec.front());
+    EXPECT_EQ(vec[vec.size()-1], vec.back());
+}
+
+TEST(VectorTest, ResizeToSmaller){
+    int SIZE = 10, NEWSIZE = 3;
+    int VAL = 5;
+    vector<int> vec(SIZE,VAL);
+
+    vec.resize(NEWSIZE);
+
+    EXPECT_EQ(vec.size(), NEWSIZE)<<"the vector was shrank, size must be updated to "<<NEWSIZE;
+    EXPECT_EQ(vec.capacity(), NEWSIZE)<<"capacity must be equal to "<<NEWSIZE;
+
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, vec[0], VAL);
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, vec[1], VAL);
+    EXPECT_PRED2([=](int x, int y)->bool{return x == y;}, vec[2], VAL);
+}
+TEST(VectorTest, ResizeToBigger){
+    int SIZE = 10, NEWSIZE = 13;
+    int VAL = 5;
+    vector<int> vec(SIZE,VAL);
+
+    vec.resize(NEWSIZE);
+
+    EXPECT_EQ(vec.size(), SIZE)<<"the vector was extented, size must be equal to origin size -"<<SIZE;
+    EXPECT_EQ(vec.capacity(), NEWSIZE)<<"capacity must be equal to "<<NEWSIZE;
+}
+TEST(VectorTest, ResizeToSame){
+    int SIZE = 10, NEWSIZE = 10;
+    int VAL = 5;
+    vector<int> vec(SIZE,VAL);
+
+    vec.resize(NEWSIZE);
+
+    EXPECT_EQ(vec.size(), SIZE)<<"size must be equal to origin size -"<<SIZE;
+    EXPECT_EQ(vec.capacity(), NEWSIZE)<<"capacity must be equal to "<<NEWSIZE;
 }
