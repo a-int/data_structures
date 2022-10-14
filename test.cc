@@ -1,4 +1,3 @@
-#include <cassert>
 #ifdef PTESTING
 #define private public
 #endif
